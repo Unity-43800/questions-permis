@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Quiz Vérifications Permis B</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+  :root {
+    --bleu:    #1A3B6E;
+    --bleu-vif:#2563EB;
+    --bg:      #F0F4FA;
+    --card:    #FFFFFF;
+    --border:  #D1DCF0;
+    --texte:   #111827;
+    --gris:    #6B7280;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--texte);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  header {
+    background: var(--bleu);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .logo-rf {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    color: white;
+    line-height: 1.2;
+    border-left: 3px solid #EF4444;
+    padding-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    flex-shrink: 0;
+  }
+  header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 15px;
+    font-weight: 800;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    flex: 1;
+    text-align: center;
+  }
+  .cpt {
+    background: rgba(255,255,255,.18);
+    color: white;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* Barre de progression */
+  .barre-wrap {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 12px;
+    color: var(--gris);
+    font-weight: 500;
+  }
+  .barre {
+    flex: 1;
+    height: 6px;
+    background: #E5E7EB;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .barre-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #2563EB, #16A34A);
+    border-radius: 10px;
+    transition: width .4s ease;
+    width: 0%;
+  }
+  .score-txt { font-weight: 700; color: #16A34A; white-space: nowrap; }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    gap: 6px;
+    padding: 8px 16px;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #F9FAFB;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 3px 10px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+  .dot-v { background: #16A34A; }
+  .dot-r { background: #DC2626; }
+  .dot-g { background: #9CA3AF; }
+  .btn-reset {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--gris);
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px 10px;
+    cursor: pointer;
+    margin-left: auto;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Filtres */
+  .filtres {
+    display: flex;
+    gap: 6px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+  }
+  .filtres button {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 12px;
+    border-radius: 20px;
+    border: 1.5px solid transparent;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: filter .1s;
+    touch-action: manipulation;
+  }
+  .filtres button:active { filter: brightness(.85); }
+  .f-all  { background: #1A3B6E; color: white !important; border-color: #1A3B6E !important; }
+  .f-vi   { background: #EFF6FF; color: #1D4ED8 !important; border-color: #BFDBFE !important; }
+  .f-ve   { background: #F0FDF4; color: #15803D !important; border-color: #BBF7D0 !important; }
+  .f-qser { background: #FFF7ED; color: #C2410C !important; border-color: #FED7AA !important; }
+  .f-s1   { background: #FDF4FF; color: #7E22CE !important; border-color: #E9D5FF !important; }
+  .filtres button.actif { outline: 2.5px solid currentColor; outline-offset: 1px; }
+
+  /* Contenu */
+  main {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 16px 12px 80px;
+  }
+
+  /* Carte */
+  .carte {
+    background: var(--card);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+  }
+  .carte-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 14px 10px;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .num {
+    font-family: 'Syne', sans-serif;
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--bleu);
+    min-width: 32px;
+  }
+  .tag {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    padding: 2px 8px;
+    border-radius: 20px;
+  }
+  .tag-VI   { background: #EFF6FF; color: #1D4ED8; }
+  .tag-VE   { background: #F0FDF4; color: #15803D; }
+  .tag-QSER { background: #FFF7ED; color: #C2410C; }
+  .tag-S1   { background: #FDF4FF; color: #7E22CE; }
+  .badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-left: auto;
+  }
+  .badge-ok   { background: #DCFCE7; color: #166534; }
+  .badge-nope { background: #FEE2E2; color: #991B1B; }
+
+  .carte-body { padding: 14px; }
+  .q-text {
+    font-size: 15px;
+    font-weight: 600;
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+
+  /* Bouton voir réponse */
+  .btn-voir {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: #2563EB;
+    background: #EFF6FF;
+    border: 1.5px solid #BFDBFE;
+    border-radius: 8px;
+    padding: 9px 14px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .btn-voir:active { background: #DBEAFE; }
+  .chev { margin-left: auto; display: inline-block; transition: transform .22s; font-style: normal; }
+  .chev.open { transform: rotate(180deg); }
+
+  /* Réponse */
+  .reponse {
+    display: none;
+    background: #F8FAFF;
+    border: 1.5px solid #BFDBFE;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding: 12px 14px;
+    font-size: 14px;
+    line-height: 1.65;
+    color: #1E3A6E;
+  }
+  .reponse.open { display: block; }
+  .reponse ul { padding-left: 18px; }
+  .reponse li { margin-bottom: 3px; }
+  .reponse p  { margin-bottom: 2px; }
+
+  /* Boutons eval */
+  .eval {
+    display: none;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .eval.open { display: flex; }
+  .btn-eval {
+    flex: 1;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 8px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  .btn-ok   { background: #DCFCE7; color: #166534; }
+  .btn-ok:active   { background: #BBF7D0; }
+  .btn-nope { background: #FEE2E2; color: #991B1B; }
+  .btn-nope:active { background: #FECACA; }
+
+  #msg-vide {
+    display: none;
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--gris);
+    font-size: 15px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-rf">République<br>Française</div>
+  <h1>Vérifications Permis B</h1>
+  <div class="cpt" id="cpt">— q.</div>
+</header>
+
+<div class="barre-wrap">
+  <span>Score</span>
+  <div class="barre"><div class="barre-fill" id="barre-fill"></div></div>
+  <span class="score-txt" id="score-txt">0 / 0</span>
+  <button class="btn-reset" id="btn-reset">↺ Reset</button>
+</div>
+
+<div class="stats">
+  <div class="pill"><span class="dot dot-v"></span><span id="s-ok">0 su</span></div>
+  <div class="pill"><span class="dot dot-r"></span><span id="s-nope">0 à revoir</span></div>
+  <div class="pill"><span class="dot dot-g"></span><span id="s-rest">0 restant</span></div>
+</div>
+
+<div class="filtres">
+  <button class="f-all actif" data-cat="all">Toutes</button>
+  <button class="f-vi"   data-cat="VI">🔴 VI</button>
+  <button class="f-ve"   data-cat="VE">🟢 VE</button>
+  <button class="f-qser" data-cat="QSER">🟠 QSER</button>
+  <button class="f-s1"   data-cat="S1">🟣 1ers secours</button>
+</div>
+
+<main>
+  <div id="msg-vide">Aucune question dans cette catégorie.</div>
+  <div id="liste"></div>
+</main>
+
+<script>
+var Q = [
+  {n:"01",cat:"VI",  q:"Montrez la commande de réglage de hauteur des feux.",r:"Dispositif situé en général à gauche du volant."},
+  {n:"03",cat:"VI",  q:"Mettez le rétroviseur intérieur en position nuit.",r:"Basculer le levier sous le rétroviseur. Si le véhicule a un système automatique, l'indiquer."},
+  {n:"05",cat:"VI",  q:"Faites fonctionner les essuie-glaces avant sur la position la plus rapide.",r:"Activer la commande à la vitesse maximale."},
+  {n:"07",cat:"VI",  q:"Vérifiez la présence du gilet de haute visibilité.",r:"Indiquer où il se trouve dans le véhicule, sans obligation de le sortir."},
+  {n:"09",cat:"VI",  q:"Vérifiez la présence du certificat d'immatriculation (carte grise).",r:"La photocopie est acceptée."},
+  {n:"11",cat:"VI",  q:"Montrez l'indicateur de niveau de carburant.",r:"Montrer la jauge sur le tableau de bord."},
+  {n:"13",cat:"VI",  q:"Actionnez le dégivrage de la lunette arrière et montrez le voyant correspondant.",r:"Voyant représentant trois lignes ondulées horizontales."},
+  {n:"15",cat:"VI",  q:"Montrez le voyant d'alerte signalant une pression insuffisante d'huile dans le moteur.",r:"Voyant rouge en forme de lampe à huile avec une goutte."},
+  {n:"17",cat:"VI",  q:"Vérifiez la présence de l'éthylotest.",r:"Indiquer où il se trouve dans le véhicule."},
+  {n:"19",cat:"VI",  q:"Montrez la commande de réglage du volant.",r:"Montrer le levier de déblocage sous le volant, sans changer le réglage."},
+  {n:"21",cat:"VI",  q:"Positionnez la commande pour diriger l'air vers le pare-brise.",r:"Orienter la molette vers le symbole pare-brise. La position auto peut être utilisée si disponible."},
+  {n:"23",cat:"VI",  q:"Montrez le voyant d'alerte signalant un défaut de batterie.",r:"Voyant rouge avec symbole batterie (+ et -)."},
+  {n:"25",cat:"VI",  q:"De quelle couleur est le voyant qui indique une défaillance du système de freinage ?",r:"Rouge — point d'exclamation dans un cercle."},
+  {n:"27",cat:"VI",  q:"Montrez le voyant d'alerte signalant une température trop élevée du liquide de refroidissement.",r:"Voyant rouge : thermomètre dans des vagues."},
+  {n:"29",cat:"VI",  q:"Montrez le voyant signalant la mauvaise fermeture d'une portière.",r:"Voyant représentant une voiture vue de dessus avec une portière ouverte."},
+  {n:"31",cat:"VI",  q:"Actionnez les feux de détresse.",r:"Appuyer sur le bouton triangulaire rouge (losange)."},
+  {n:"33",cat:"VI",  q:"Montrez la commande permettant d'actionner le régulateur de vitesse.",r:"Levier ou bouton sur la colonne de direction ou derrière le volant."},
+  {n:"35",cat:"VI",  q:"Sans l'actionner, montrez la commande de l'avertisseur sonore.",r:"Centre du volant ou ergots selon le véhicule."},
+  {n:"37",cat:"VI",  q:"Montrez la commande permettant de désactiver l'airbag du passager avant.",r:"Interrupteur à clé dans la boîte à gants ou sur le tableau de bord côté passager."},
+  {n:"39",cat:"VI",  q:"Montrez le voyant signalant l'absence de bouclage de la ceinture du conducteur.",r:"Voyant rouge : silhouette avec ceinture."},
+  {n:"45",cat:"VI",  q:"Montrez comment régler la hauteur de l'appui-tête du siège conducteur.",r:"Tirer vers le haut ou appuyer sur le bouton de déblocage."},
+  {n:"47",cat:"VI",  q:"De quelle couleur est le voyant indiquant que le feu de brouillard arrière est allumé ?",r:"Orange/Ambre."},
+  {n:"51",cat:"VI",  q:"Allumez les feux de route et montrez le voyant correspondant.",r:"Voyant bleu : projecteur avec rayons droits vers l'avant."},
+  {n:"53",cat:"VI",  q:"Vérifiez la présence du constat amiable dans le véhicule.",r:"Indiquer où il se trouve (boîte à gants généralement)."},
+  {n:"57",cat:"VI",  q:"Si le véhicule en est équipé, montrez la commande du limiteur de vitesse.",r:"Levier ou bouton séparé du régulateur, souvent sur la colonne de direction."},
+  {n:"59",cat:"VI",  q:"Faites fonctionner l'essuie-glace arrière.",r:"Actionner la commande dédiée (généralement levier droit)."},
+  {n:"61",cat:"VI",  q:"Indiquez où se situent les attaches Isofix dans le véhicule.",r:"Deux anneaux métalliques entre dossier et assise de la banquette arrière (obligatoires depuis 2011)."},
+  {n:"63",cat:"VI",  q:"Montrez le voyant indiquant une baisse de pression d'un pneumatique.",r:"Voyant orange : pneu vu de face avec point d'exclamation (obligatoire depuis nov. 2014)."},
+  {n:"91",cat:"VI",  q:"Allumez le(s) feu(x) de brouillard arrière et montrez le voyant correspondant.",r:"Voyant orange : projecteur avec lignes diagonales vers l'arrière."},
+  {n:"93",cat:"VI",  q:"Montrez la commande de recyclage de l'air.",r:"Bouton avec flèche circulaire à l'intérieur d'une voiture."},
+
+  {n:"02",cat:"VE",  q:"Montrez où s'effectue le remplissage du produit lave-glace.",r:"Ouvrir le capot et montrer le bocal lave-glace (symbole pare-brise avec jet d'eau)."},
+  {n:"04",cat:"VE",  q:"Contrôlez l'état du flanc sur l'un des pneumatiques.",r:"Vérifier visuellement l'absence de coupures, bosses ou déformations. Signaler toute anomalie."},
+  {n:"06",cat:"VE",  q:"Vérifiez l'état et la propreté des plaques d'immatriculation.",r:"Contrôler à l'avant et à l'arrière : propres, lisibles, en bon état."},
+  {n:"08",cat:"VE",  q:"Montrez où s'effectue le contrôle du niveau du liquide de frein.",r:"Ouvrir le capot, montrer le réservoir de liquide de frein — niveau entre mini et maxi."},
+  {n:"10",cat:"VE",  q:"Contrôlez l'état de tous les balais d'essuie-glace.",r:"Vérifier l'absence de craquelures, de déchirures et la bonne fixation."},
+  {n:"12",cat:"VE",  q:"Montrez où s'effectue le remplissage du liquide de refroidissement.",r:"Ouvrir le capot et montrer le bocal (symbole thermomètre)."},
+  {n:"14",cat:"VE",  q:"Contrôlez l'état, la propreté et le fonctionnement de tous les clignotants côté trottoir.",r:"Vérifier que les clignotants sont propres, en bon état et fonctionnent. Signaler toute anomalie."},
+  {n:"16",cat:"VE",  q:"Contrôlez l'état, la propreté et le fonctionnement du ou des feux de brouillard arrière.",r:"Vérifier propreté, bon état et fonctionnement. Signaler toute anomalie."},
+  {n:"18",cat:"VE",  q:"Contrôlez l'état, la propreté et le fonctionnement des feux de détresse à l'avant et à l'arrière.",r:"Vérifier les 4 feux de détresse : propres, en bon état et fonctionnent."},
+  {n:"20",cat:"VE",  q:"Contrôlez l'état, la propreté et le fonctionnement des feux de route.",r:"Vérifier propreté, bon état et fonctionnement. Signaler toute anomalie."},
+  {n:"22",cat:"VE",  q:"Montrez où doit s'effectuer le contrôle du niveau d'huile moteur.",r:"Ouvrir le capot et montrer la jauge à huile. Pas de manipulation exigée."},
+  {n:"24",cat:"VE",  q:"Montrez l'emplacement de la batterie du véhicule.",r:"Sous le capot (souvent avant gauche) ou dans le coffre selon le véhicule."},
+  {n:"26",cat:"VE",  q:"Contrôlez l'état, la propreté et le fonctionnement des feux de croisement.",r:"Vérifier propreté, bon état et fonctionnement. Signaler toute anomalie."},
+  {n:"28",cat:"VE",  q:"Vérifiez l'état et la propreté des dispositifs réfléchissants.",r:"Vérifier que les catadiopres sont propres et en bon état."},
+  {n:"30",cat:"VE",  q:"Contrôlez l'état, la propreté et le fonctionnement des feux de position à l'avant et à l'arrière.",r:"Vérifier propreté, bon état et fonctionnement. Signaler toute anomalie."},
+  {n:"32",cat:"VE",  q:"Sur le flanc d'un pneumatique, désignez le repère du témoin d'usure de la bande de roulement.",r:"Petit triangle sur le flanc indiquant l'emplacement du témoin dans les rainures."},
+  {n:"34",cat:"VE",  q:"Ouvrez la trappe à carburant et vérifiez la bonne fermeture du bouchon.",r:"Ouvrir la trappe, vérifier le bouchon fermé, refermer la trappe."},
+  {n:"36",cat:"VE",  q:"Montrez où s'effectue le remplissage de l'huile moteur.",r:"Ouvrir le capot et montrer le bouchon de remplissage (symbole lampe à huile)."},
+  {n:"38",cat:"VE",  q:"A l'aide de la plaque indicative, donnez la pression préconisée pour les pneus arrières, véhicule chargé.",r:"Lire la valeur sur la plaque dans l'encadrement de la portière conducteur."},
+  {n:"40",cat:"VE",  q:"Vérifiez le fonctionnement de l'éclairage de la plaque d'immatriculation arrière.",r:"Allumer les feux de position et vérifier que la plaque est bien éclairée."},
+  {n:"41",cat:"VE",  q:"Vérifiez la présence de l'attestation d'assurance et de sa vignette sur le pare-brise.",r:"Vérifier la présence de l'attestation et la vignette apposée au pare-brise."},
+  {n:"42",cat:"VE",  q:"Indiquez où se situe la sécurité enfant sur l'une des portières arrière.",r:"Mécanisme sur le bord de la portière arrière, accessible portière ouverte."},
+  {n:"44",cat:"VE",  q:"Avec l'accompagnateur, contrôlez les feux de recul.",r:"Passer en marche arrière et vérifier : feux blancs, propres, en bon état et fonctionnels."},
+  {n:"46",cat:"VE",  q:"Avec l'accompagnateur, contrôlez les feux de stop.",r:"Appuyer sur le frein et vérifier : propres, en bon état et fonctionnels."},
+  {n:"48",cat:"VE",  q:"Ouvrez et refermez le capot, vérifiez sa bonne fermeture.",r:"Fermer, tirer la gâchette, appuyer sur le capot pour confirmer le verrouillage."},
+  {n:"52",cat:"VE",  q:"Vérifiez l'état, la propreté et le fonctionnement des feux diurnes.",r:"Vérifier propreté, bon état et fonctionnement. Signaler toute anomalie."},
+  {n:"54",cat:"VE",  q:"Vérifiez la présence du triangle de pré-signalisation.",r:"Indiquer où il se trouve dans le véhicule (coffre généralement)."},
+  {n:"56",cat:"VE",  q:"Montrez où s'effectue le changement d'une ampoule à l'avant du véhicule.",r:"Ouvrir le capot et montrer l'accès aux douilles de phares avant."},
+  {n:"58",cat:"VE",  q:"Montrez où s'effectue le changement d'une ampoule à l'arrière du véhicule.",r:"Accès aux feux arrière depuis le coffre ou l'aile arrière selon le véhicule."},
+  {n:"60",cat:"VE",  q:"Ouvrez et refermez le coffre, vérifiez sa bonne fermeture.",r:"Vérifier que le coffre est bien verrouillé."},
+  {n:"64",cat:"VE",  q:"Procédez à l'ouverture du capot puis à sa fermeture en vous assurant du verrouillage.",r:"Tirer la commande, soulever, appuyer sur la sécurité, refermer et vérifier."},
+  {n:"66",cat:"VE",  q:"Montrez où se situent les gicleurs de lave-glace avant.",r:"Petites buses sur le capot ou la grille, orientées vers le bas du pare-brise."},
+  {n:"92",cat:"VE",  q:"Vérifiez l'état, la propreté et le fonctionnement des feux diurnes (bis).",r:"Vérifier propreté, bon état et fonctionnement."},
+
+  {n:"01",cat:"QSER",q:"Pourquoi doit-on régler la hauteur des feux ?",r:"Pour ne pas éblouir les autres usagers."},
+  {n:"02",cat:"QSER",q:"Pourquoi utiliser un liquide lave-glace spécial en hiver ?",r:"Pour éviter le gel du liquide."},
+  {n:"03",cat:"QSER",q:"Quel est l'intérêt de la position nuit du rétroviseur intérieur ?",r:"Ne pas être ébloui par les feux du véhicule suiveur."},
+  {n:"04",cat:"QSER",q:"Citez un endroit où trouver les pressions préconisées pour les pneus.",r:"Sur une plaque dans la portière, dans la notice du véhicule, ou au niveau de la trappe à carburant."},
+  {n:"05",cat:"QSER",q:"Comment détecter l'usure des essuie-glaces en circulation ?",r:"En cas de pluie, lorsqu'ils laissent des traces sur le pare-brise."},
+  {n:"06",cat:"QSER",q:"Précautions à prendre en cas d'installation d'un porte-vélo ?",r:"La plaque d'immatriculation et les feux doivent rester visibles."},
+  {n:"07",cat:"QSER",q:"En cas de panne ou d'accident, quel autre accessoire de sécurité est obligatoire (avec le gilet) ?",r:"Le triangle de pré-signalisation."},
+  {n:"08",cat:"QSER",q:"Conséquence d'un niveau insuffisant du liquide de frein ?",r:"Une perte d'efficacité du freinage."},
+  {n:"09",cat:"QSER",q:"Deux autres documents obligatoires en cas de contrôle (avec la carte grise) ?",r:"L'attestation d'assurance et le permis de conduire."},
+  {n:"10",cat:"QSER",q:"Risque de circuler avec des balais d'essuie-glace défectueux ?",r:"Mauvaise visibilité en cas d'intempéries."},
+  {n:"11",cat:"QSER",q:"Précautions lors du remplissage du réservoir ?",r:"Arrêter le moteur, ne pas fumer, ne pas téléphoner."},
+  {n:"12",cat:"QSER",q:"Danger si l'on complète le liquide de refroidissement moteur chaud ?",r:"Un risque de brûlure."},
+  {n:"13",cat:"QSER",q:"Conséquence d'une panne de dégivrage de la lunette arrière ?",r:"Insuffisance ou absence de visibilité vers l'arrière."},
+  {n:"14",cat:"QSER",q:"Signification d'un clignotement plus rapide ?",r:"Non-fonctionnement de l'une des ampoules."},
+  {n:"15",cat:"QSER",q:"Conditions à respecter pour contrôler le niveau d'huile ?",r:"Moteur froid et sur un terrain plat."},
+  {n:"16",cat:"QSER",q:"Dans quels cas utilise-t-on les feux de brouillard arrière ?",r:"Par temps de brouillard et de neige."},
+  {n:"17",cat:"QSER",q:"A partir de quel taux d'alcoolémie est-on en infraction en permis probatoire ?",r:"0,2 g/l — soit 0 verre, car ce seuil peut être dépassé dès le 1er verre."},
+  {n:"18",cat:"QSER",q:"Dans quels cas utilise-t-on les feux de détresse ?",r:"En cas de panne, d'accident ou de ralentissement important."},
+  {n:"19",cat:"QSER",q:"Pourquoi bien régler son volant ? Citez deux exemples.",r:"Confort de conduite, accessibilité aux commandes, visibilité du tableau de bord, efficacité des airbags."},
+  {n:"20",cat:"QSER",q:"Citez un cas d'utilisation de l'appel lumineux.",r:"Pour avertir de son approche, en cas de danger, ou à la place de l'avertisseur sonore."},
+  {n:"21",cat:"QSER",q:"Deux éléments complémentaires permettant un désembuage efficace ?",r:"Commande de vitesse de ventilation, commande d'air chaud, ou climatisation."},
+  {n:"22",cat:"QSER",q:"Principal risque d'un manque d'huile moteur ?",r:"Risque de détérioration ou de casse du moteur."},
+  {n:"23",cat:"QSER",q:"Ce qui peut provoquer la décharge de la batterie moteur éteint ?",r:"Les feux ou accessoires électriques laissés en fonctionnement."},
+  {n:"24",cat:"QSER",q:"Solution en cas de panne de batterie pour démarrer sans déplacer le véhicule ?",r:"Brancher une deuxième batterie en parallèle (+ avec + et - avec -) ou la remplacer."},
+  {n:"25",cat:"QSER",q:"Risque de circuler avec un frein de parking mal desserré ?",r:"Dégradation du système de freinage."},
+  {n:"26",cat:"QSER",q:"Conséquences d'un mauvais réglage des feux de croisement ?",r:"Mauvaise vision vers l'avant et risque d'éblouissement des autres usagers."},
+  {n:"27",cat:"QSER",q:"Conséquence d'une température trop élevée du liquide de refroidissement ?",r:"Une surchauffe ou une casse moteur."},
+  {n:"28",cat:"QSER",q:"Utilité des dispositifs réfléchissants ?",r:"Rendre le véhicule visible la nuit."},
+  {n:"29",cat:"QSER",q:"Précaution pour que les enfants à l'arrière ne puissent pas ouvrir leur portière ?",r:"Actionner la sécurité enfant sur les deux portières arrière."},
+  {n:"30",cat:"QSER",q:"A quelle distance les feux de position doivent-ils être visibles par temps clair ?",r:"A 150 mètres."},
+  {n:"32",cat:"QSER",q:"Qu'est-ce que l'aquaplanage et sa conséquence ?",r:"Film d'eau entre le pneu et la chaussée pouvant entraîner une perte de contrôle du véhicule."},
+  {n:"33",cat:"QSER",q:"Sans actionner la commande, comment désactiver rapidement le régulateur de vitesse ?",r:"En appuyant sur la pédale de frein ou d'embrayage."},
+  {n:"35",cat:"QSER",q:"Dans quel cas peut-on utiliser l'avertisseur sonore en agglomération ?",r:"En cas de danger immédiat."},
+  {n:"37",cat:"QSER",q:"Dans quelle situation doit-on désactiver l'airbag passager avant ?",r:"Lors du transport d'un enfant à l'avant dans un siège auto dos à la route."},
+  {n:"38",cat:"QSER",q:"Fréquence préconisée pour vérifier la pression des pneus ?",r:"Chaque mois et avant chaque long trajet."},
+  {n:"39",cat:"QSER",q:"A partir de quel âge un enfant peut-il être au siège passager avant ?",r:"10 ans."},
+  {n:"40",cat:"QSER",q:"Un défaut d'éclairage de la plaque au contrôle technique entraîne-t-il une contre-visite ?",r:"Oui."},
+  {n:"42",cat:"QSER",q:"Si la sécurité enfant est enclenchée, peut-on ouvrir la portière arrière depuis l'extérieur ?",r:"Oui."},
+  {n:"43",cat:"QSER",q:"Peut-on utiliser les feux de brouillard arrière par forte pluie ?",r:"Non."},
+  {n:"44",cat:"QSER",q:"Deux utilités des feux de recul ?",r:"Eclairer la zone de recul la nuit et avertir les autres usagers de la manoeuvre."},
+  {n:"45",cat:"QSER",q:"Utilité de l'appui-tête ?",r:"Retenir le mouvement de la tête en cas de choc et limiter les blessures."},
+  {n:"46",cat:"QSER",q:"Conséquence en cas de panne des feux de stop ?",r:"Manque d'information pour les usagers suiveurs et risque de collision."},
+  {n:"47",cat:"QSER",q:"Différence entre un voyant orange et un voyant rouge ?",r:"Rouge : anomalie de fonctionnement ou danger. Orange : élément important à surveiller."},
+  {n:"48",cat:"QSER",q:"Risque d'une mauvaise fermeture du capot en roulant ?",r:"Risque d'ouverture du capot pouvant entraîner un accident."},
+  {n:"49",cat:"QSER",q:"Risque de maintenir le recyclage de l'air de manière prolongée ?",r:"Risque de mauvaise visibilité par apparition de buée sur les surfaces vitrées."},
+  {n:"50",cat:"QSER",q:"Principal risque d'une absence de liquide lave-glace ?",r:"Une mauvaise visibilité."},
+  {n:"51",cat:"QSER",q:"Risque de maintenir les feux de route lors d'un croisement ?",r:"Risque d'éblouissement des autres usagers."},
+  {n:"52",cat:"QSER",q:"Utilité des feux diurnes ?",r:"Rendre le véhicule plus visible le jour."},
+  {n:"53",cat:"QSER",q:"En cas d'accident, dans quel délai transmettre le constat amiable à l'assureur ?",r:"Dans les 5 jours."},
+  {n:"54",cat:"QSER",q:"Utilise-t-on le triangle de pré-signalisation sur autoroute ?",r:"Non."},
+  {n:"56",cat:"QSER",q:"Conséquences en cas de panne d'un feu de croisement ?",r:"Mauvaise visibilité et risque d'être confondu avec un deux-roues."},
+  {n:"57",cat:"QSER",q:"Utilité d'un limiteur de vitesse ?",r:"Ne pas dépasser la vitesse programmée par le conducteur."},
+  {n:"58",cat:"QSER",q:"Conséquences en cas de panne d'un feu de position arrière ?",r:"Etre mal vu et risque de collision."},
+  {n:"59",cat:"QSER",q:"Par temps de pluie, en plus de l'essuie-glace arrière, quelle commande actionner ?",r:"La commande de désembuage (dégivrage) arrière."},
+  {n:"60",cat:"QSER",q:"Poids important dans le coffre : précautions pour pneus et éclairage avant ?",r:"Augmenter la pression des pneus et régler la hauteur des feux avant."},
+  {n:"61",cat:"QSER",q:"Peut-on fixer tous les sièges enfant sur des attaches Isofix ?",r:"Non, uniquement ceux compatibles avec ce type d'attache."},
+  {n:"62",cat:"QSER",q:"Risques de circuler avec des objets sur la plage arrière ?",r:"Mauvaise visibilité vers l'arrière et risque de projection en cas de freinage brusque."},
+  {n:"63",cat:"QSER",q:"Fréquence préconisée pour vérifier la pression d'air des pneus ?",r:"Tous les mois."},
+  {n:"64",cat:"QSER",q:"Utilité du dispositif de sécurité d'un capot s'ouvrant par l'avant ?",r:"Empecher l'ouverture du capot en circulation en cas de mauvais verrouillage."},
+  {n:"65",cat:"QSER",q:"Principale conséquence d'un dispositif lave-glace défaillant ?",r:"Mauvaise visibilité due à l'impossibilité de nettoyer le pare-brise."},
+
+  {n:"01",cat:"S1",  q:"Comment et pourquoi protéger une zone de danger en cas d'accident ?",r:"En délimitant clairement et largement la zone de danger de façon visible, pour protéger les victimes et éviter un sur-accident."},
+  {n:"02",cat:"S1",  q:"Comportements à adopter en cas de diffusion du signal d'alerte SAIP ?",r:"• Se mettre en sécurité\n• S'informer via les médias et sites des autorités\n• Respecter les consignes des autorités"},
+  {n:"03",cat:"S1",  q:"Comment est composé le signal d'alerte SAIP diffusé par les sirènes ?",r:"Deux codes distincts :\n• Signal National d'Alerte (SNA) : variation sur 3 cycles successifs\n• Signal de fin d'alerte : signal continu"},
+  {n:"04",cat:"S1",  q:"Sur autoroute, comment indiquer avec précision les lieux de l'accident depuis un portable ?",r:"En indiquant le numéro de l'autoroute, le sens de circulation et le point kilométrique."},
+  {n:"05",cat:"S1",  q:"Comment vérifier la respiration d'une victime ?",r:"Regarder si le ventre et la poitrine se soulèvent et sentir de l'air à l'expiration (10 secondes)."},
+  {n:"06",cat:"S1",  q:"Qu'est-ce qu'une perte de connaissance ?",r:"La victime ne répond pas et ne réagit pas, mais respire."},
+  {n:"07",cat:"S1",  q:"Si un dégagement d'urgence est nécessaire, où déplacer la victime ?",r:"Dans un endroit suffisamment éloigné du danger et de ses conséquences."},
+  {n:"08",cat:"S1",  q:"Quel équipement porter avant de quitter le véhicule en cas de panne ou d'accident ?",r:"Le gilet de haute visibilité (gilet jaune) avant de sortir du véhicule."},
+  {n:"09",cat:"S1",  q:"Pourquoi l'alerte auprès des secours doit-elle être rapide et précise ?",r:"Pour permettre aux secours d'apporter les moyens adaptés aux victimes dans le délai le plus court."},
+  {n:"10",cat:"S1",  q:"Quels sont les numéros d'urgence à composer ?",r:"• 18 : sapeurs-pompiers\n• 15 : SAMU\n• 112 : numéro européen"},
+  {n:"11",cat:"S1",  q:"Comportements face à une victime inconsciente qui respire ?",r:"• La placer en Position Latérale de Sécurité (PLS)\n• Alerter les secours\n• Surveiller la respiration jusqu'à l'arrivée des secours"},
+  {n:"12",cat:"S1",  q:"Comment arrêter une hémorragie ?",r:"Appuyer fortement sur l'endroit qui saigne avec les doigts ou la paume, en mettant un tissu propre sur la plaie."},
+  {n:"13",cat:"S1",  q:"Hors autoroute, où placer le triangle de pré-signalisation ?",r:"A environ 30 m de la panne ou de l'accident, ou avant un virage ou un sommet de côte."},
+  {n:"14",cat:"S1",  q:"Conditions pour réaliser le dégagement d'urgence d'une victime ?",r:"La victime doit être visible, facile à atteindre, rien ne doit gêner son dégagement et il faut être sûr(e) de pouvoir le réaliser."},
+  {n:"15",cat:"S1",  q:"Les trois informations à transmettre aux services de secours ?",r:"• Le numéro de téléphone depuis lequel l'appel est émis\n• La nature du problème\n• La localisation la plus précise possible"},
+  {n:"16",cat:"S1",  q:"Par quels moyens alerter les secours ?",r:"A l'aide d'un téléphone portable ou, à défaut, d'un téléphone fixe ou d'une borne d'appel d'urgence."},
+  {n:"17",cat:"S1",  q:"Comportement face à une victime en arrêt cardiaque ?",r:"• ALERTER : alerter immédiatement les secours\n• MASSER : pratiquer une RCP\n• DÉFIBRILLER : utiliser un DAE si possible"},
+  {n:"18",cat:"S1",  q:"Dans quel cas positionner une victime en PLS ?",r:"Si la victime ne répond pas, ne réagit pas et respire."},
+  {n:"19",cat:"S1",  q:"Dans quelle situation peut-on déplacer une victime ?",r:"En présence d'un danger réel, immédiat, non contrôlable. Le déplacement doit rester exceptionnel."},
+  {n:"22",cat:"S1",  q:"Comment est diffusée l'alerte émise par le SAIP ?",r:"Via les sirènes, les médias (Radio France, France Télévision) et l'application SAIP."},
+  {n:"23",cat:"S1",  q:"A partir de quel âge peut-on suivre une formation aux premiers secours ?",r:"A partir de 10 ans."},
+  {n:"24",cat:"S1",  q:"Pourquoi pratiquer immédiatement une RCP sur une victime en arrêt cardiaque ?",r:"Car les lésions du cerveau surviennent dès les premières minutes."},
+  {n:"27",cat:"S1",  q:"Lors d'un appel aux secours, pourquoi attendre l'autorisation de raccrocher ?",r:"Car ils peuvent conseiller ou guider dans la réalisation des gestes jusqu'à l'arrivée des secours."},
+  {n:"28",cat:"S1",  q:"A quel moment peut-on mettre fin à un appel avec les secours ?",r:"Uniquement lorsque notre correspondant nous invite à le faire."},
+  {n:"29",cat:"S1",  q:"Les trois manières d'évaluer l'état de conscience d'une victime ?",r:"• Poser des questions simples (\"ca va ?\", \"vous m'entendez ?\")\n• Lui secouer doucement les épaules\n• Lui prendre la main en demandant un geste (\"serrez-moi la main\")"},
+  {n:"30",cat:"S1",  q:"Risques pour une personne en perte de connaissance allongée sur le dos ?",r:"L'arrêt respiratoire et l'arrêt cardiaque."},
+  {n:"35",cat:"S1",  q:"Pourquoi ne pas laisser une personne inconsciente allongée sur le dos ?",r:"Elle risque l'étouffement par des liquides dans la gorge ou la chute de la langue en arrière."},
+  {n:"36",cat:"S1",  q:"L'utilisation d'un DAE sur quelqu'un qui n'est pas en arrêt cardiaque est-elle risquée ?",r:"Non, car le DAE se déclenche uniquement en cas d'arrêt cardiaque."},
+  {n:"41",cat:"S1",  q:"Qu'est-ce qu'une hémorragie ?",r:"Une perte de sang prolongée qui ne s'arrête pas — elle imbibe un mouchoir en quelques secondes."},
+  {n:"43",cat:"S1",  q:"Signes d'un arrêt cardiaque ?",r:"La victime ne répond pas, ne réagit pas et ne respire pas (ou présente une respiration anormale)."},
+  {n:"44",cat:"S1",  q:"Qu'est-ce qu'un défibrillateur automatisé externe (DAE) ?",r:"Un appareil pouvant rétablir une activité cardiaque normale chez une victime en arrêt cardiaque."},
+  {n:"47",cat:"S1",  q:"Qu'est-ce qu'un arrêt cardiaque ?",r:"Le coeur ne fonctionne plus ou fonctionne de façon anarchique."},
+  {n:"48",cat:"S1",  q:"Risque principal d'un arrêt cardiaque sans intervention des secours ?",r:"La mort de la victime qui survient en quelques minutes."},
+  {n:"51",cat:"S1",  q:"Objectif du Signal d'Alerte et d'Information des Populations (SAIP) ?",r:"Avertir la population d'un danger imminent ou qu'un événement grave est en train de se produire."}
+];
+
+var etat = {}; // index => 'ok' | 'nope'
+var filtre = 'all';
+var liste = [];
+
+function getIndices() {
+  var res = [];
+  for (var i = 0; i < Q.length; i++) {
+    if (filtre === 'all' || Q[i].cat === filtre) res.push(i);
+  }
+  return res;
+}
+
+function rendreListe() {
+  var indices = getIndices();
+  liste = indices;
+  var el = document.getElementById('liste');
+  el.innerHTML = '';
+  document.getElementById('msg-vide').style.display = indices.length === 0 ? 'block' : 'none';
+  document.getElementById('cpt').textContent = indices.length + ' q.';
+
+  var labels = {VI:'Vérification Intérieure', VE:'Vérification Extérieure', QSER:'Sécurité Routière', S1:'Premiers Secours'};
+
+  for (var k = 0; k < indices.length; k++) {
+    (function(k, idx) {
+      var q = Q[idx];
+      var ev = etat[idx];
+      var carte = document.createElement('div');
+      carte.className = 'carte';
+
+      var rep = q.r.split('\n');
+      var repHtml = '';
+      var hasBullet = q.r.indexOf('\n•') !== -1 || q.r.indexOf('•') === 0;
+      if (hasBullet) {
+        repHtml = '<ul>';
+        for (var i = 0; i < rep.length; i++) {
+          var l = rep[i].replace(/^•\s*/, '');
+          if (l) repHtml += '<li>' + l + '</li>';
+        }
+        repHtml += '</ul>';
+      } else {
+        for (var i = 0; i < rep.length; i++) {
+          if (rep[i]) repHtml += '<p>' + rep[i] + '</p>';
+        }
+      }
+
+      var badgeHtml = '';
+      if (ev === 'ok')   badgeHtml = '<span class="badge badge-ok">Su</span>';
+      if (ev === 'nope') badgeHtml = '<span class="badge badge-nope">A revoir</span>';
+
+      carte.innerHTML =
+        '<div class="carte-header">' +
+          '<span class="num">' + q.n + '</span>' +
+          '<span class="tag tag-' + q.cat + '">' + (q.cat === 'S1' ? '1ers secours' : q.cat) + '</span>' +
+          '<span style="font-size:11px;color:#6B7280;margin-left:4px">' + labels[q.cat] + '</span>' +
+          badgeHtml +
+        '</div>' +
+        '<div class="carte-body">' +
+          '<div class="q-text">' + q.q + '</div>' +
+          '<button class="btn-voir" id="bv' + k + '">' +
+            '<span id="bvtxt' + k + '">Voir la reponse</span>' +
+            '<i class="chev" id="chev' + k + '">▾</i>' +
+          '</button>' +
+          '<div class="reponse" id="rep' + k + '">' + repHtml + '</div>' +
+          '<div class="eval" id="ev' + k + '">' +
+            '<button class="btn-eval btn-ok"   id="bok' + k + '">Su</button>' +
+            '<button class="btn-eval btn-nope" id="bnope' + k + '">A revoir</button>' +
+          '</div>' +
+        '</div>';
+
+      el.appendChild(carte);
+
+      document.getElementById('bv' + k).addEventListener('click', function() {
+        var r = document.getElementById('rep' + k);
+        var ev2 = document.getElementById('ev' + k);
+        var c = document.getElementById('chev' + k);
+        var t = document.getElementById('bvtxt' + k);
+        var isOpen = r.classList.contains('open');
+        if (isOpen) {
+          r.classList.remove('open');
+          ev2.classList.remove('open');
+          c.classList.remove('open');
+          t.textContent = 'Voir la reponse';
+        } else {
+          r.classList.add('open');
+          ev2.classList.add('open');
+          c.classList.add('open');
+          t.textContent = 'Masquer';
+        }
+      });
+
+      document.getElementById('bok' + k).addEventListener('click', function() {
+        noterQ(idx, k, 'ok');
+      });
+      document.getElementById('bnope' + k).addEventListener('click', function() {
+        noterQ(idx, k, 'nope');
+      });
+    })(k, indices[k]);
+  }
+  majStats();
+}
+
+function noterQ(idx, k, val) {
+  etat[idx] = val;
+  var carte = document.getElementById('bok' + k).closest('.carte');
+  var old = carte.querySelector('.badge');
+  if (old) old.remove();
+  var badge = document.createElement('span');
+  badge.className = 'badge ' + (val === 'ok' ? 'badge-ok' : 'badge-nope');
+  badge.textContent = val === 'ok' ? 'Su' : 'A revoir';
+  carte.querySelector('.carte-header').appendChild(badge);
+  majStats();
+}
+
+function majStats() {
+  var total = liste.length;
+  var ok = 0, nope = 0;
+  for (var i = 0; i < liste.length; i++) {
+    if (etat[liste[i]] === 'ok') ok++;
+    else if (etat[liste[i]] === 'nope') nope++;
+  }
+  var rest = total - ok - nope;
+  document.getElementById('s-ok').textContent = ok + ' su';
+  document.getElementById('s-nope').textContent = nope + ' a revoir';
+  document.getElementById('s-rest').textContent = rest + ' restant' + (rest > 1 ? 'es' : 'e');
+  document.getElementById('score-txt').textContent = ok + ' / ' + total;
+  document.getElementById('barre-fill').style.width = total ? (ok / total * 100) + '%' : '0%';
+}
+
+// Filtres
+var btns = document.querySelectorAll('.filtres button');
+for (var i = 0; i < btns.length; i++) {
+  btns[i].addEventListener('click', function() {
+    for (var j = 0; j < btns.length; j++) btns[j].classList.remove('actif');
+    this.classList.add('actif');
+    filtre = this.getAttribute('data-cat');
+    rendreListe();
+  });
+}
+
+// Reset
+document.getElementById('btn-reset').addEventListener('click', function() {
+  if (confirm('Reinitialiser toutes les evaluations ?')) {
+    etat = {};
+    rendreListe();
+  }
+});
+
+rendreListe();
+</script>
+</body>
+</html>
